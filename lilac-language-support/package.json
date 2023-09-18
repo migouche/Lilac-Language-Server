@@ -1,0 +1,25 @@
+{
+  "name": "lilac-language-support",
+  "displayName": "Lilac Language Support",
+  "description": "Syntax highlighting for Lilac",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.82.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [{
+      "id": "lilac",
+      "aliases": ["Lilac", "lilac"],
+      "extensions": [".llc"],
+      "configuration": "./language-configuration.json"
+    }],
+    "grammars": [{
+      "language": "lilac",
+      "scopeName": "source.lilac",
+      "path": "./syntaxes/lilac.tmLanguage.json"
+    }]
+  }
+}

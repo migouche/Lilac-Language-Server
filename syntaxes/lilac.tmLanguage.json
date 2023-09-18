@@ -1,0 +1,115 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "Lilac",
+	"patterns": [
+		{
+			"include": "#strings"
+		},
+		{
+			"include": "#comments"
+		},
+		{
+			"include": "#function-definition"
+		},
+		{
+			"include": "#function-call"
+		},
+		{
+			"include": "#operators"
+		},
+		{
+			"include": "#literals"
+		}
+
+	],
+	"repository": {
+		"strings": {
+			"name": "string.quoted.double.lilac",
+			"begin": "\"",
+			"end": "\"",
+			"patterns": [
+				{
+					"name": "constant.character.escape.lilac",
+					"match": "\\\\."
+				}
+			]
+		},
+		"comments":{
+			"patterns": [
+				{
+					"name": "comment.line.double-slash.lilac",
+					"begin": "\\/\\/",
+					"end": "$"
+				},
+				{
+					"name": "comment.block.lilac",
+					"begin": "\\/\\*",
+					"end": "\\*\\/"
+				}
+			]
+		},
+		"function-definition": {
+			"name": "meta.funtion.signature.lilac",
+			"begin": "\\b(func)\\s+(\\w+)",
+			"beginCaptures": {
+				"1": {
+					"name": "keyword.control.lilac"
+				},
+				"2": {
+					"name": "entity.name.function.lilac"
+				}
+			},
+			"patterns": [
+				{
+					"name": "storage.type.lilac",
+					"match": "\\w+"
+				}
+			],
+			"end": "\\{"
+		},
+		"function-call": {
+			"name": "meta.function-call.lilac",
+			"begin": "\\b(\\w+)\\(",
+			"beginCaptures": {
+				"1": {
+					"name": "entity.name.function.lilac"
+				}
+			},
+			"end": "\\)",
+			"patterns": [
+				{
+					"include": "#strings"
+				},
+				{
+					"include": "#operators"
+				},
+				{
+					"include": "#literals"
+				},
+				{
+					"name": "entity.name.function.lilac",
+					"match": "\\w+"
+				}
+			]
+		},
+		"operators": {
+			"name": "keyword.operator.lilac",
+			"match": "\\+|-|\\*|\\/|\\%|\\=|\\>|\\<|\\!|\\&|\\||\\^|\\~|\\?"
+		},
+		"literals":{
+			"patterns": [
+				{
+					"name": "constant.numeric.lilac",
+					"match": "\\d+"
+				},
+				{
+					"name": "constant.language.lilac",
+					"match": "true|false"
+				}
+			
+			]
+		}
+
+	},
+	"scopeName": "source.lilac"
+}

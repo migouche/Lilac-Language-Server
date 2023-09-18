@@ -24,14 +24,16 @@
 		"languages": [
 			{
 				"id": "lilac",
-				"extensions": [ ".llc" ]
+				"extensions": [
+					".llc"
+				]
 			}
 		],
 		"grammars": [
 			{
 				"language": "lilac",
 				"scopeName": "source.lilac",
-				"path": "client/syntaxes/lilac.tmLanguage.json"
+				"path": "syntaxes/lilac.tmLanguage.json"
 			}
 		],
 		"configuration": {
@@ -68,7 +70,7 @@
 	},
 	"devDependencies": {
 		"@types/mocha": "^9.1.0",
-		"@types/node": "^16.18.34",
+		"@types/node": "^16.18.52",
 		"@typescript-eslint/eslint-plugin": "^6.7.0",
 		"@typescript-eslint/parser": "^6.7.0",
 		"eslint": "^8.35.0",
