@@ -21,6 +21,19 @@
 	],
 	"main": "./client/out/extension",
 	"contributes": {
+		"languages": [
+			{
+				"id": "lilac",
+				"extensions": [ ".llc" ]
+			}
+		],
+		"grammars": [
+			{
+				"language": "lilac",
+				"scopeName": "source.lilac",
+				"path": "./client/out/lilac.tmLanguage.json"
+			}
+		],
 		"configuration": {
 			"type": "object",
 			"title": "Example configuration",
