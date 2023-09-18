@@ -31,7 +31,7 @@
 			{
 				"language": "lilac",
 				"scopeName": "source.lilac",
-				"path": "./client/out/lilac.tmLanguage.json"
+				"path": "client/syntaxes/lilac.tmLanguage.json"
 			}
 		],
 		"configuration": {

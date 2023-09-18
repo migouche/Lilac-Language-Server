@@ -151,6 +151,7 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
 			severity: DiagnosticSeverity.Warning,
 			range: {
 				start: textDocument.positionAt(m.index),
+			
 				end: textDocument.positionAt(m.index + m[0].length)
 			},
 			message: `${m[0]} is all uppercase.`,
@@ -163,7 +164,7 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
 						uri: textDocument.uri,
 						range: Object.assign({}, diagnostic.range)
 					},
-					message: 'Spelling matters'
+					message: 'Spelling mattersss'
 				},
 				{
 					location: {
