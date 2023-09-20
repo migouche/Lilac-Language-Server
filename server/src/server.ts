@@ -20,6 +20,7 @@ import {
 import {
 	TextDocument
 } from 'vscode-languageserver-textdocument';
+import { assert } from 'console';
 
 // Create a connection for the server, using Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
@@ -134,9 +135,196 @@ documents.onDidChangeContent(change => {
 	validateTextDocument(change.document);
 });
 
+class Message {
+	kind: DiagnosticSeverity;
+	message: string;
+
+	constructor(kind: DiagnosticSeverity, message: string) {
+		this.kind = kind;
+		this.message = message;
+	}
+}
+
+class FunctionCall {
+	name: string;
+	arguments: (FunctionCall | Expression | null)[];
+
+	constructor(name: string, args: (FunctionCall | Expression | null)[]) {
+		this.name = name;
+		this.arguments = args;
+	}
+}
+
+class Expression {
+	value: string | number | boolean;
+	
+	constructor(value: string | number | boolean) {
+		this.value = value;
+	}
+}
+
+class FunctionCase {
+	arguments: string[];
+	body: FunctionCall | Expression;
+
+	constructor(args: string[], body: FunctionCall | Expression) {
+		this.arguments = args;
+		this.body = body;
+	}
+}
+
+
+class FunctionBody {
+	cases: FunctionCase[];
+
+	constructor(cases: FunctionCase[]) {
+		this.cases = cases;
+	}
+}
+
+class FunctionHeader {
+	name: string;
+	inputs: string[]; // types
+	outputs: string[]; // types
+
+
+
+
+
+	constructor(name: string, inputs: string[], outputs: string[]) {
+		this.name = name;
+		this.inputs = inputs;
+		this.outputs = outputs;
+	}
+}
+
+class Function {
+	header: FunctionHeader;
+	body: FunctionBody;
+
+	diagnostic(): Message {
+		if(this.header.name == "") {
+			return new Message(DiagnosticSeverity.Error, "Function name cannot be empty");
+		}
+		// check inputs are the same as all arguments in each case in body
+		for(let i = 0; i < this.body.cases.length; i++) {
+			let c = this.body.cases[i];
+			if(c.arguments.length != this.header.inputs.length) {
+				return new Message(DiagnosticSeverity.Error, "Number of arguments in case " + i + " does not match function header");
+			}
+			for(let j = 0; j < c.arguments.length; j++) {
+				if(c.arguments[j] != this.header.inputs[j]) {
+					return new Message(DiagnosticSeverity.Error, "Argument " + j + " in case " + i + " does not match function header");
+				}
+			}
+		}
+		return new Message(DiagnosticSeverity.Information, ""); // indformation + empty string = no message at all
+	}
+
+
+	constructor(header: FunctionHeader, body: FunctionBody) {
+		this.header = header;
+		this.body = body;
+	}
+}
+
+// functions are of the form:
+/*
+
+func name intype1 intype2 ... -> outtype1 outtype2 ...
+{
+	name (arg1, arg2, ...) = body;
+	name (arg1, arg2, ...) = body;//these cover all possible inputs
+	...
+}
+
+*/
+
+function parse_header(input: string): FunctionHeader | null
+{
+	const regex = /^func\s+(\w+)\s+((?:\w+\s*,\s*)*\w+)\s*->\s*((?:\w+\s*,\s*)*\w+)$/;
+	const match = input.match(regex);
+	if (!match) {
+	  return null;
+	}
+	const header: FunctionHeader = {
+	  name: match[1],
+	  inputs: match[2].split(",").map(s => s.trim()),
+	  outputs: match[3].split(",").map(s => s.trim())
+	};
+	return header;
+
+}
+
+function parse_function_case(input: string): FunctionCase | null
+{
+	const regex  = /(\w+)\(([^;]*)\)\s*=\s*([^;]*);\s*/
+	const match = input.match(regex);
+	if (!match) {
+	  return null;
+	}
+	const args = match[2].split(",").map(s => s.trim());
+	const body = parse_function_call(match[3]);
+	if (!body) {
+	  return null;
+	}
+	const funcCase: FunctionCase = {
+	  arguments: args,
+	  body: body
+	};
+	return funcCase;
+
+}
+
+function parse_function_call(input: string): FunctionCall | Expression | null {
+	const regex = /^(\w+)\((.*)\)$/;
+	const match = input.match(regex);
+	if (!match) {
+	  return parse_expression(input);
+	}
+	const name = match[1];
+	const args = parse_function_arguments(match[2]);
+	const funcCall: FunctionCall = {
+	  name: name,
+	  arguments: args
+	};
+	return funcCall;
+  }
+  
+  function parse_function_arguments(input: string): (FunctionCall | Expression | null)[] {
+	const args:  (FunctionCall | Expression | null)[] = [];
+	let currentArg = "";
+	let depth = 0;
+	for (let i = 0; i < input.length; i++) {
+	  const c = input.charAt(i);
+	  if (c === "," && depth === 0) {
+		args.push(parse_function_call(currentArg.trim()) || parse_expression(currentArg.trim()));
+		currentArg = "";
+	  } else {
+		currentArg += c;
+		if (c === "(") {
+		  depth++;
+		} else if (c === ")") {
+		  depth--;
+		}
+	  }
+	}
+	if (currentArg.trim().length > 0) {
+	  args.push(parse_function_call(currentArg.trim()) || parse_expression(currentArg.trim()));
+	}
+	return args;
+  }
+  
+  function parse_expression(input: string): Expression | null {
+	// Implement your expression parser here
+	return null;
+  }
+
+
 async function validateTextDocument(textDocument: TextDocument): Promise<void> {
 	// In this simple example we get the settings for every validate run.
 	const settings = await getDocumentSettings(textDocument.uri);
+	
 
 	// The validator creates diagnostics for all uppercase words length 2 and more
 	const text = textDocument.getText();
@@ -165,13 +353,15 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
 						range: Object.assign({}, diagnostic.range)
 					},
 					message: 'Spelling mattersss'
+					
 				},
 				{
 					location: {
 						uri: textDocument.uri,
 						range: Object.assign({}, diagnostic.range)
 					},
-					message: 'Particularly for names'
+					message: 'Particularly for names',
+					
 				}
 			];
 		}
